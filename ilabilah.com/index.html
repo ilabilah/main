@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/bootstrap.min.css" />
+    <link type="text/css" rel="stylesheet" href="main.css">
+    <title>ilabilah</title>
+    
+</head>
+<body>
+  
+    <div lang='ar' dir='rtl'  id="css">
+        
+        <div id="instructions" class="centrer">
+            <button class="btn btn-secondary a_nav" style="top: 5px; right: 5px; z-index: 10004;position: absolute;">Connexion</button>
+            <p >
+                Clicker pour jouer
+            </p>
+            <p>
+                Bouger: WASD<br/><br/>
+                Tourner: Votre souris
+            </p>
+            <button style="z-index: 10004;" class="btn btn-primary a_nav">Sauvegarder</button><br>
+            <button style="z-index: 10004;" class="btn btn-secondary a_nav">Faire un don</button>
+        </div>
+    </div>
+    
+   
+    
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "./build/three.module.js"
+            }
+        }
+    </script>
+
+    <script async src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js"></script>
+    <script type="module">
+
+        import * as THREE from 'three';
+        import Stats from './jsm/libs/stats.module.js';
+        import { GLTFLoader } from './jsm/loaders/GLTFLoader.js';
+        import { Octree } from './jsm/math/Octree.js';
+        import { OctreeHelper } from './jsm/helpers/OctreeHelper.js';
+        import { Capsule } from './jsm/math/Capsule.js';
+        import { GUI } from './jsm/libs/lil-gui.module.min.js';
+        import { TWEEN } from './jsm/libs/tween.module.min.js';
+        import { TrackballControls } from './jsm/controls/TrackballControls.js';
+        import { CSS3DRenderer, CSS3DObject } from './jsm/renderers/CSS3DRenderer.js';
+        import { PointerLockControls } from './jsm/controls/PointerLockControls.js';
+
+        var camera, root, scene,renderer, renderer2, background,frontground, main;
+        var sequence=[];
+        var sequence_mot=[];
+        var sequence_in=[];
+        var erreur = false;
+        var n_mot = 0;
+        var sphere;
+        var light;
+        var plane;
+        const n_or = 1.618033;
+        const clock = new THREE.Clock();
+        const worldOctree = new Octree();
+        
+        const playerCollider = new Capsule( new THREE.Vector3( 1, 0, 0), new THREE.Vector3( 0, 1, 0 ), 1 );
+        const playerVelocity = new THREE.Vector3();
+        const playerDirection = new THREE.Vector3();
+        let mouseTime = 0;
+        const keyStates = {};
+        const GRAVITY = 30;
+
+        const vector1 = new THREE.Vector3();
+        const vector2 = new THREE.Vector3();
+        const vector3 = new THREE.Vector3();
+        var playerOnFloor = false;
+        const container_css = document.querySelector('#css');
+
+        let element = document.createElement( 'span' );
+        let message_span_wbleu = document.createElement('span');
+        let message_span_wvert = document.createElement('span');
+        let message_span_worange = document.createElement('span');
+        let message_span_wrouge = document.createElement('span');
+        let message_span_wDhabt = document.createElement('span');
+        let score_color = document.createElement('span');
+        let message_mot;
+
+		const stats = new Stats();
+        stats.domElement.style.position = 'absolute';
+		stats.domElement.style.top = '10px';
+        stats.domElement.style.left = '1px';
+		container_css.appendChild( stats.domElement );
+
+
+        init();
+        animate();
+
+        function init() {
+            
+            let Allah = "ٱللَّٰهُ";
+            const Allah_Akbar = "ٱللَّٰهُ أَكْبَرُ";
+            const athan = 'أَشْهَدُ أَن لَّا إِلَٰهَ إِلَّا ٱللَّٰهُ';
+            scene = new THREE.Scene()
+            root = new THREE.Object3D()
+            root.position.x = window.innerWidth;
+            root.position.y = 0;
+            root.position.z = -window.innerWidth/n_or;
+            scene.add(root)
+            main = new PointerLockControls( camera, document.body );
+           
+
+            const instructions = document.getElementById( 'instructions' );
+
+            instructions.addEventListener( 'click', function () 
+            {
+                main.lock();
+            } );
+
+            main.addEventListener( 'lock', function () 
+            {
+                instructions.style.display = 'none';
+            } );
+
+            main.addEventListener( 'unlock', function () 
+            {
+                instructions.style.display = 'flex';
+            } );
+
+            scene.add(main)
+            background = makeElementObject('div', window.innerWidth, window.innerHeight,athan)
+            background.css3dObject.element.setAttribute('contenteditable', '')    
+            background.css3dObject.element.style.opacity = "1"
+            background.css3dObject.element.style.padding = parseInt(window.innerWidth/7)+'px'
+            background.css3dObject.element.style.fontSize = parseInt(window.innerWidth/4)+'px'
+            background.position.x = 0;
+            background.position.y = 0;
+            background.position.z =0;
+         
+            background.css3dObject.element.style.background = '#00a381'
+            root.add( background );
+
+         
+
+            
+            // light
+            ~function() {
+                var ambientLight = new THREE.AmbientLight( 0x999999, 1.5 );
+                root.add( ambientLight );
+
+                light = new THREE.PointLight( 0xffffff, 1, 0 );
+                light.castShadow = true;
+                light.position.z = 150;
+                light.shadow.mapSize.width = 1024;  // default
+                light.shadow.mapSize.height = 1024; // default
+                light.shadow.camera.near = 1;       // default
+                light.shadow.camera.far = 2000;      // default
+
+                scene.add( new THREE.PointLightHelper( light, 10 ) )
+
+                root.add( light );
+            }()
+
+            
+
+            camera = new THREE.PerspectiveCamera(50,window.innerWidth/window.innerHeight,1,1000);
+            camera.position.set( 0, 0, 30 );
+
+            renderer2 = new CSS3DRenderer();
+            renderer2.domElement.style.position = 'absolute';
+            renderer2.domElement.style.top = 0;
+            container_css.appendChild( renderer2.domElement );
+
+            window.addEventListener( 'resize', resize );
+            resize()
+        }
+
+        
+        function resize() {
+            camera.fov = 45
+            camera.aspect = window.innerWidth / window.innerHeight
+            camera.near = 1
+            camera.far = 2000
+            camera.updateProjectionMatrix()
+            renderer2.setSize( window.innerWidth, window.innerHeight );
+            //renderer.setSize( window.innerWidth, window.innerHeight );
+        }
+
+       
+
+        function makeElementObject(type, width, height, message) 
+        {
+            const obj = new THREE.Object3D
+            
+
+            width=width*5;
+            element.style.width = width+'px';
+            element.style.height = height+'px';
+            element.style.opacity = 0.999;
+            element.style.boxSizing = 'border-box'
+            element.className = "arabic"
+
+            
+
+            // make an invisible plane for the DOM element to chop
+            // clip a WebGL geometry with it.
+            var material = new THREE.MeshPhongMaterial({
+                opacity : 0.15,
+                color : new THREE.Color( 0x111111 ),
+                blending: THREE.NoBlending,
+                // side : THREE.DoubleSide,
+            });
+            var geometry = new THREE.BoxGeometry( width, height, 1 );
+            var mesh = new THREE.Mesh( geometry, material );
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+            
+
+
+            let message_wbleu=[];
+            let message_wvert=[];
+            let message_worange=[];
+            let message_wrouge=[];
+            //let message_wDhabt=[];
+            //score_color = message.split(" ");
+                
+                for(let i=0; i<message.length; i++)
+                {                     
+                    if(message.charCodeAt(i)==1614)   // Fatha
+                    {
+                       sequence.push("ArrowUp") ;
+                    } 
+                    else
+                    {
+                        message_wbleu = message_wbleu + message.charAt(i)
+                        if(message.charCodeAt(i)==1615)
+                        {
+                            sequence.push("ArrowLeft") ;
+                        } 
+                        else if(message.charCodeAt(i)==1618)
+                        {
+                            sequence.push("ArrowRight") ;
+                        } 
+                        else if(message.charCodeAt(i)==1616)
+                        {
+                            sequence.push("ArrowDown") ;
+                        }
+                        else if(message.charCodeAt(i)==32)
+                        {
+                            sequence.push(";") ;
+                        } 
+                    }
+                }
+                sequence.push(";") ;
+                
+            
+            
+    
+            for(let i=0;i<message_wbleu.length;i++)
+            {                           
+                if(message_wbleu.charCodeAt(i)!=1615)   //  Damma
+                {
+                    message_wvert = message_wvert + message_wbleu.charAt(i)
+		        } 
+            }
+           
+
+            for(let i=0;i<message_wvert.length;i++)
+            {                         
+                if(message_wvert.charCodeAt(i)!=1618)  // Sukoun 
+                {
+                    message_worange = message_worange + message_wvert.charAt(i) 
+		        }          
+            }
+
+           
+            
+
+            
+            for(let i=0;i<message_worange.length;i++)
+            {                         
+                if(message_worange.charCodeAt(i)!=1616)  // Kasra 
+                {
+                    message_wrouge = message_wrouge + message_worange.charAt(i)  
+		        }            
+            }
+
+            
+            message_mot = message.split(" ");
+
+            
+            message_span_wbleu.innerHTML = message;
+            message_span_wvert.innerHTML = message_wbleu;
+            message_span_worange.innerHTML = message_wvert;
+            message_span_wrouge.innerHTML = message_worange;
+            message_span_wDhabt.innerHTML = message_wrouge;
+            
+            message_span_wbleu.style="color:rgb(0,0,255);position: absolute;";
+            message_span_wvert.style="color:rgb(0,255,0);position: absolute;";
+            message_span_worange.style="color:rgb(255,115,0);position: absolute;";
+            message_span_wrouge.style="color:rgb(255,0,0);position: absolute;";
+            message_span_wDhabt.style="color:rgb(0,0,0);position: absolute;";
+
+            element.appendChild(message_span_wbleu);
+            element.appendChild(message_span_wvert);
+            element.appendChild(message_span_worange);
+            element.appendChild(message_span_wrouge);
+            element.appendChild(message_span_wDhabt);
+            
+            var css3dObject = new CSS3DObject( element );
+            obj.css3dObject = css3dObject
+            obj.add(css3dObject)
+            obj.lightShadowMesh = mesh
+            obj.add( mesh );
+            return obj
+        }
+
+
+
+
+
+function animate() {
+
+    const deltaTime = Math.min( 0.05, clock.getDelta() )/5
+
+    for ( let i = 0; i < 5; i ++ ) 
+    {
+        controls( deltaTime );
+        updatePlayer( deltaTime );   
+    }
+    
+    scene.updateMatrixWorld()
+    renderer2.render( scene, camera );
+
+    stats.update();
+
+    requestAnimationFrame( animate );
+}
+
+
+
+
+
+
+
+document.addEventListener( 'keydown', ( event ) => {
+
+    keyStates[ event.code ] = true;
+    if ( event.code== 'ArrowDown'||event.code== 'ArrowUp'|| event.code== 'ArrowRight'||event.code== 'ArrowLeft' ) 
+    {
+        keyStates[ event.code ] = false;
+    }
+
+} );
+
+document.addEventListener( 'keyup', ( event ) => {
+
+    keyStates[ event.code ] = false;
+    if ( event.code== 'ArrowDown'||event.code== 'ArrowUp'|| event.code== 'ArrowRight'||event.code== 'ArrowLeft' ) 
+    {
+        keyStates[ event.code ] = true;
+    }
+
+} );
+
+container_css.addEventListener( 'mousedown', () => {
+
+    document.body.requestPointerLock();
+
+    mouseTime = performance.now();
+
+} );
+
+container_css.addEventListener( 'mouseup', () => {
+
+    if ( document.pointerLockElement !== null );// throwBall();
+
+} );
+
+document.body.addEventListener( 'mousemove', ( event ) => {
+
+    if ( document.pointerLockElement === document.body ) {
+
+        camera.rotation.y -= event.movementX / 500;
+        camera.rotation.x -= event.movementY / 500;
+
+    }
+
+} );
+
+
+function getForwardVector() {
+
+    camera.getWorldDirection( playerDirection );
+    playerDirection.y = 0;
+    playerDirection.normalize();
+    return playerDirection;
+}
+
+
+function getSideVector() {
+
+    camera.getWorldDirection( playerDirection );
+    playerDirection.y = 0;
+    playerDirection.normalize();
+    playerDirection.cross( camera.up );
+    return playerDirection;
+
+}
+
+
+function controls( deltaTime ) {
+
+// gives a bit of air control
+//const speedDelta = deltaTime * ( playerOnFloor ? 25 : 8 );
+
+if ( keyStates[ 'KeyW' ] ) {
+
+    playerVelocity.add( getForwardVector().multiplyScalar( deltaTime ) );
+
+}
+
+if ( keyStates[ 'KeyS' ] ) {
+
+    playerVelocity.add( getForwardVector().multiplyScalar( - deltaTime ) );
+
+}
+
+if ( keyStates[ 'KeyA' ] ) {
+
+    playerVelocity.add( getSideVector().multiplyScalar( - deltaTime ) );
+
+}
+
+if ( keyStates[ 'KeyD' ] ) {
+
+    playerVelocity.add( getSideVector().multiplyScalar( deltaTime ) );
+
+}
+
+if ( keyStates[ 'ArrowDown' ] ) {
+    keyStates[ 'ArrowDown' ] = false;
+    sequence_in.push("ArrowDown");
+    score();
+}
+
+
+if ( keyStates[ 'ArrowUp' ] ) {
+    keyStates[ 'ArrowUp' ] = false;
+    sequence_in.push("ArrowUp");
+    score();
+}
+
+if ( keyStates[ 'ArrowLeft' ] ) {
+    keyStates[ 'ArrowLeft' ] = false;
+    sequence_in.push("ArrowLeft");
+    score();
+}
+
+
+if ( keyStates[ 'ArrowRight' ] ) {
+    keyStates[ 'ArrowRight' ] = false;
+    sequence_in.push("ArrowRight");
+    score();
+}
+
+}
+
+function score()
+{
+    if(sequence_in.length<sequence.length)
+    {
+        if((sequence[sequence_in.length]==";") && (sequence[sequence_in.length-1]==sequence_in[sequence_in.length-1]))
+        {
+            if(!erreur)
+            {
+                sequence_in.push(";")
+                
+                let mot = document.createElement('span');
+                mot.innerHTML = message_mot[sequence_mot.length]+" ";
+                mot.style="color:rgb(255,255,255);position: relative;";
+                score_color.appendChild(mot)
+                element.appendChild(score_color)
+                sequence_mot.push(1);
+                console.log("Win");
+            }
+            else
+            {
+                sequence_in.push(";")
+                erreur = false;
+            }
+        }
+        else if((sequence[sequence_in.length]==";") && (sequence[sequence_in.length-1]!=sequence_in[sequence_in.length-1]))
+        {
+            if(!erreur)
+            {
+                sequence_in.push(";")
+                let mot = document.createElement('span');
+                mot.innerHTML = message_mot[sequence_mot.length]+" ";
+                mot.style="color:rgb(0,0,0);position: relative;";
+                score_color.appendChild(mot)
+                element.appendChild(score_color)
+                sequence_mot.push(0);
+                console.log("Lose !");
+            }
+            else
+            {
+                sequence_in.push(";")
+                erreur = false;
+            }
+        }
+        else if(sequence[sequence_in.length-1]!=sequence_in[sequence_in.length-1])
+        {
+            if(!erreur)
+            {
+                let mot = document.createElement('span');
+                mot.innerHTML = message_mot[sequence_mot.length]+" ";
+                mot.style="color:rgb(0,0,0);position: relative;";
+                score_color.appendChild(mot)
+                element.appendChild(score_color)
+                sequence_mot.push(0);
+                console.log("Lose !");
+                erreur = true;
+            }
+            else
+            {
+                erreur = true;
+            }
+        }
+    }
+    
+    console.log("sequence_mot = "+sequence_mot);
+    console.log("sequence_in = "+sequence_in);
+    console.log("sequence = "+sequence);
+    
+}
+
+
+
+
+function updatePlayer( deltaTime ) {
+
+    let damping = (Math.exp( - 3 * deltaTime ) - 1);
+    deltaTime = deltaTime*10000;
+
+
+
+playerVelocity.addScaledVector( playerVelocity, damping );
+const deltaPosition = playerVelocity.clone().multiplyScalar( deltaTime );
+playerCollider.translate( deltaPosition );
+
+
+camera.position.copy( playerCollider.end );
+
+}
+
+
+
+
+
+/*function removeDhabt(s) {
+    return s.replace(/ِ|ُ|ٓ|ٰ|ْ|ٌ|ٍ|ً|ّ|َ/g,'');
+}  */
+</script>
+
+<script src="js/bootstrap.min.js"></script>
+</body>
+</html>
+
+
+
+
