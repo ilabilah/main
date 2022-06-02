@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="css/bootstrap.min.css" />
     <link type="text/css" rel="stylesheet" href="main.css">
+    <script src="https://js.stripe.com/v3"></script>
     <title>ilabilah</title>
     
 </head>
@@ -14,22 +15,37 @@
     <div lang='ar' dir='rtl'  id="css">
         
         <div id="instructions" class="centrer">
-            <button class="btn btn-secondary a_nav" style="top: 5px; right: 5px; z-index: 10004;position: absolute;">Connexion</button>
-            <p >
-                Clicker pour jouer
-            </p>
-            <p>
-                Bouger: WASD<br/><br/>
-                Tourner: Votre souris
-            </p>
-            <button style="z-index: 10004;" class="btn btn-primary a_nav">Sauvegarder</button><br>
-            <button style="z-index: 10004;" class="btn btn-secondary a_nav">Faire un don</button>
+            <button class="btn-lg btn-secondary a_nav" style="top: 5px; left: 5px; z-index: 10004;position: absolute;" id="checkout-button-price_1Jks7EALUOMxUriHenEcxJ3C" role="link" type="button">Faire un don</button>
+            <button class="btn-lg btn-secondary a_nav" style="top: 5px; right: 5px; z-index: 10004;position: absolute;">Connexion</button>
+            <button id="jouer" style="z-index: 10004;" class="btn-lg btn-primary a_nav">Jouer</button>    
         </div>
     </div>
     
    
-    
+    <script>
+     var checkoutButton = document.getElementById('checkout-button-price_1Jks7EALUOMxUriHenEcxJ3C');
+            (function() {
+  var stripe = Stripe('pk_test_51JeNLRALUOMxUriHe0HbEolnDr96ouLT9e8wnQRsckOh7AinFNzroOwBzlVqmpn68SfdJVhl2wM9dAVvyDFW1P9a00pJ8m7gcN');
 
+  
+  checkoutButton.addEventListener('click', function () {
+
+    stripe.redirectToCheckout({
+      lineItems: [{price: 'price_1Jks7EALUOMxUriHenEcxJ3C', quantity: 1}],
+      mode: 'payment',
+      successUrl: window.location.protocol + '//ilabilah.com/success',
+      cancelUrl: window.location.protocol + '//ilabilah.com/canceled',
+    })
+    .then(function (result) {
+      if (result.error) {
+        var displayError = document.getElementById('error-message');
+        displayError.textContent = result.error.message;
+      }
+    });
+  });
+})();
+    </script>
+   
     <script type="importmap">
         {
             "imports": {
@@ -42,7 +58,6 @@
     <script type="module">
 
         import * as THREE from 'three';
-        import Stats from './jsm/libs/stats.module.js';
         import { GLTFLoader } from './jsm/loaders/GLTFLoader.js';
         import { Octree } from './jsm/math/Octree.js';
         import { OctreeHelper } from './jsm/helpers/OctreeHelper.js';
@@ -53,7 +68,7 @@
         import { CSS3DRenderer, CSS3DObject } from './jsm/renderers/CSS3DRenderer.js';
         import { PointerLockControls } from './jsm/controls/PointerLockControls.js';
 
-        var camera, root, scene,renderer, renderer2, background,frontground, main;
+        var camera, root, scene,renderer, renderer2, background,frontground;
         var sequence=[];
         var sequence_mot=[];
         var sequence_in=[];
@@ -77,6 +92,7 @@
         const vector2 = new THREE.Vector3();
         const vector3 = new THREE.Vector3();
         var playerOnFloor = false;
+        var main = new THREE.Object3D
         const container_css = document.querySelector('#css');
 
         let element = document.createElement( 'span' );
@@ -88,11 +104,7 @@
         let score_color = document.createElement('span');
         let message_mot;
 
-		const stats = new Stats();
-        stats.domElement.style.position = 'absolute';
-		stats.domElement.style.top = '10px';
-        stats.domElement.style.left = '1px';
-		container_css.appendChild( stats.domElement );
+		
 
 
         init();
@@ -103,39 +115,44 @@
             let Allah = "ٱللَّٰهُ";
             const Allah_Akbar = "ٱللَّٰهُ أَكْبَرُ";
             const athan = 'أَشْهَدُ أَن لَّا إِلَٰهَ إِلَّا ٱللَّٰهُ';
+            const Hawqala = 'لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِٱللَّٰهِ';
             scene = new THREE.Scene()
             root = new THREE.Object3D()
-            root.position.x = window.innerWidth;
+            root.position.x = 0;
             root.position.y = 0;
             root.position.z = -window.innerWidth/n_or;
             scene.add(root)
-            main = new PointerLockControls( camera, document.body );
-           
 
             const instructions = document.getElementById( 'instructions' );
+            const jouer = document.getElementById( 'jouer' );
 
-            instructions.addEventListener( 'click', function () 
+            instructions.style.width = window.innerWidth+'px';
+            instructions.style.height = window.innerHeight+'px';
+            
+            var main_css3dObj = new CSS3DObject( instructions);
+            main.css3dObject = main_css3dObj
+            main.add(main_css3dObj)
+            main.position.x =  0;
+            main.position.y =  1;
+            main.position.z =  -window.innerHeight/(2*Math.tan(Math.PI/8));
+            scene.add(main)  
+
+           
+
+            
+            jouer.addEventListener( 'click', function () 
             {
-                main.lock();
+                
+                document.body.requestPointerLock();
+                main.css3dObject.element.style.opacity = "0"
             } );
 
-            main.addEventListener( 'lock', function () 
-            {
-                instructions.style.display = 'none';
-            } );
-
-            main.addEventListener( 'unlock', function () 
-            {
-                instructions.style.display = 'flex';
-            } );
-
-            scene.add(main)
-            background = makeElementObject('div', window.innerWidth, window.innerHeight,athan)
+            background = makeElementObject('div', window.innerWidth*1.5, window.innerHeight,Hawqala)
             background.css3dObject.element.setAttribute('contenteditable', '')    
             background.css3dObject.element.style.opacity = "1"
-            background.css3dObject.element.style.padding = parseInt(window.innerWidth/7)+'px'
-            background.css3dObject.element.style.fontSize = parseInt(window.innerWidth/4)+'px'
-            background.position.x = 0;
+            //background.css3dObject.element.style.padding = parseInt(window.innerWidth/7)+'px'
+            background.css3dObject.element.style.fontSize = parseInt(window.innerWidth/7)+'px'
+            background.position.x = window.innerWidth/2;
             background.position.y = 0;
             background.position.z =0;
          
@@ -165,8 +182,8 @@
 
             
 
-            camera = new THREE.PerspectiveCamera(50,window.innerWidth/window.innerHeight,1,1000);
-            camera.position.set( 0, 0, 30 );
+            camera = new THREE.PerspectiveCamera(45,window.innerWidth/window.innerHeight,1,1000);
+            camera.position.set( 0, 0, 0 );
 
             renderer2 = new CSS3DRenderer();
             renderer2.domElement.style.position = 'absolute';
@@ -193,9 +210,7 @@
         function makeElementObject(type, width, height, message) 
         {
             const obj = new THREE.Object3D
-            
 
-            width=width*5;
             element.style.width = width+'px';
             element.style.height = height+'px';
             element.style.opacity = 0.999;
@@ -334,7 +349,7 @@ function animate() {
     scene.updateMatrixWorld()
     renderer2.render( scene, camera );
 
-    stats.update();
+    //stats.update();
 
     requestAnimationFrame( animate );
 }
@@ -352,6 +367,7 @@ document.addEventListener( 'keydown', ( event ) => {
     {
         keyStates[ event.code ] = false;
     }
+    console.log("event.code = "+event.code)
 
 } );
 
@@ -367,7 +383,7 @@ document.addEventListener( 'keyup', ( event ) => {
 
 container_css.addEventListener( 'mousedown', () => {
 
-    document.body.requestPointerLock();
+    //document.body.requestPointerLock();
 
     mouseTime = performance.now();
 
@@ -378,6 +394,13 @@ container_css.addEventListener( 'mouseup', () => {
     if ( document.pointerLockElement !== null );// throwBall();
 
 } );
+
+document.addEventListener('pointerlockchange', (event) => {
+  if ( document.pointerLockElement == null )
+  {
+    main.css3dObject.element.style.opacity = "1"
+  }
+});
 
 document.body.addEventListener( 'mousemove', ( event ) => {
 
@@ -397,6 +420,7 @@ function getForwardVector() {
     playerDirection.y = 0;
     playerDirection.normalize();
     return playerDirection;
+    
 }
 
 
@@ -466,6 +490,7 @@ if ( keyStates[ 'ArrowRight' ] ) {
     score();
 }
 
+
 }
 
 function score()
@@ -499,11 +524,11 @@ function score()
                 sequence_in.push(";")
                 let mot = document.createElement('span');
                 mot.innerHTML = message_mot[sequence_mot.length]+" ";
-                mot.style="color:rgb(0,0,0);position: relative;";
+                mot.style="color:rgb(255,0,0);position: relative;";
                 score_color.appendChild(mot)
                 element.appendChild(score_color)
                 sequence_mot.push(0);
-                console.log("Lose !");
+                console.log("Lose 1 !");
             }
             else
             {
@@ -517,17 +542,19 @@ function score()
             {
                 let mot = document.createElement('span');
                 mot.innerHTML = message_mot[sequence_mot.length]+" ";
-                mot.style="color:rgb(0,0,0);position: relative;";
+                mot.style="color:rgb(255,0,0);position: relative;";
                 score_color.appendChild(mot)
                 element.appendChild(score_color)
                 sequence_mot.push(0);
-                console.log("Lose !");
-                erreur = true;
+                console.log("Lose 2 !");
+                while(sequence[sequence_in.length]!=";")
+                {
+                    sequence_in.push(" ");
+                }
+                sequence_in.push(";");
+                erreur = false;
             }
-            else
-            {
-                erreur = true;
-            }
+            
         }
     }
     
@@ -553,6 +580,11 @@ playerCollider.translate( deltaPosition );
 
 
 camera.position.copy( playerCollider.end );
+/*
+console.log("camera.position.x = "+camera.position.x)
+console.log("camera.position.y = "+camera.position.y)
+console.log("camera.position.z = "+camera.position.z)
+*/
 
 }
 
@@ -560,9 +592,6 @@ camera.position.copy( playerCollider.end );
 
 
 
-/*function removeDhabt(s) {
-    return s.replace(/ِ|ُ|ٓ|ٰ|ْ|ٌ|ٍ|ً|ّ|َ/g,'');
-}  */
 </script>
 
 <script src="js/bootstrap.min.js"></script>
