@@ -14,10 +14,16 @@
   
     <div lang='ar' dir='rtl'  id="css">
         
-        <div id="instructions" class="centrer">
+        <div id="instructions" class="centrer" style = "background-color: rgba(0,0,0,1)">
             <button class="btn-lg btn-secondary a_nav" style="top: 5px; left: 5px; z-index: 10004;position: absolute;" id="checkout-button-price_1Jks7EALUOMxUriHenEcxJ3C" role="link" type="button">Faire un don</button>
             <button class="btn-lg btn-secondary a_nav" style="top: 5px; right: 5px; z-index: 10004;position: absolute;">Connexion</button>
             <button id="jouer" style="z-index: 10004;" class="btn-lg btn-primary a_nav">Jouer</button>    
+            <img style="max-height: 175px ;bottom: 5px; z-index: 10004;position: absolute;" src="images/arrow.jpg">
+        </div>
+        <div id="gmur_hawala"  class="centrer">
+        </div>
+        <div id="dmur_hawala" class="centrer">
+            <span>Il n'y a de force et de puissance que par Dieu</span>
         </div>
     </div>
     
@@ -68,7 +74,7 @@
         import { CSS3DRenderer, CSS3DObject } from './jsm/renderers/CSS3DRenderer.js';
         import { PointerLockControls } from './jsm/controls/PointerLockControls.js';
 
-        var camera, root, scene,renderer, renderer2, background,frontground;
+        var camera, scene,renderer, renderer2, hawqala,frontground;
         var sequence=[];
         var sequence_mot=[];
         var sequence_in=[];
@@ -111,35 +117,57 @@
         animate();
 
         function init() {
-            
-            let Allah = "ٱللَّٰهُ";
-            const Allah_Akbar = "ٱللَّٰهُ أَكْبَرُ";
-            const athan = 'أَشْهَدُ أَن لَّا إِلَٰهَ إِلَّا ٱللَّٰهُ';
-            const Hawqala = 'لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِٱللَّٰهِ';
+    
             scene = new THREE.Scene()
-            root = new THREE.Object3D()
-            root.position.x = 0;
-            root.position.y = 0;
-            root.position.z = -window.innerWidth/n_or;
-            scene.add(root)
 
             const instructions = document.getElementById( 'instructions' );
             const jouer = document.getElementById( 'jouer' );
 
             instructions.style.width = window.innerWidth+'px';
             instructions.style.height = window.innerHeight+'px';
+            instructions.style = "background-color: rgba(0,0,0,0.5)";
             
             var main_css3dObj = new CSS3DObject( instructions);
             main.css3dObject = main_css3dObj
             main.add(main_css3dObj)
             main.position.x =  0;
             main.position.y =  1;
-            main.position.z =  -window.innerHeight/(2*Math.tan(Math.PI/8));
+            main.position.z =  1-window.innerHeight/(2*Math.tan(Math.PI/8));
             scene.add(main)  
 
-           
-
             
+            const gmur_hawqala_ele =  document.getElementById( 'gmur_hawala' );
+            gmur_hawqala_ele.style.width = 2*window.innerWidth+'px';
+            gmur_hawqala_ele.style.height = window.innerHeight+'px';
+            gmur_hawqala_ele.style = "background-color: rgba(0, 163, 129,0.5)";
+            const gmur_hawqala_css3dObj = new CSS3DObject( gmur_hawqala_ele);
+            const gmur_hawqala_3D = new THREE.Object3D;
+            gmur_hawqala_3D.css3dObject = gmur_hawqala_css3dObj;
+            gmur_hawqala_3D.add(gmur_hawqala_css3dObj);
+            gmur_hawqala_3D.position.x =  -window.innerWidth/2;
+            gmur_hawqala_3D.position.y =  1;
+            gmur_hawqala_3D.position.z =  -window.innerWidth/2;
+            gmur_hawqala_3D.rotation.y = Math.PI/2;
+            scene.add(gmur_hawqala_3D);
+
+            const dmur_hawqala_ele =  document.getElementById( 'dmur_hawala' );
+            dmur_hawqala_ele.style.width = 2*window.innerWidth+'px';
+            dmur_hawqala_ele.style.height = window.innerHeight+'px';
+            dmur_hawqala_ele.style = "background-color: rgba(0, 163, 129,0.5)";
+            const dmur_hawqala_css3dObj = new CSS3DObject( dmur_hawqala_ele);
+            const dmur_hawqala_3D = new THREE.Object3D;
+
+            dmur_hawqala_3D.css3dObject = dmur_hawqala_css3dObj;
+            dmur_hawqala_3D.add(dmur_hawqala_css3dObj);
+            dmur_hawqala_3D.position.x =  window.innerWidth/2;
+            dmur_hawqala_3D.position.y =  1;
+            dmur_hawqala_3D.position.z =  -window.innerWidth/2;
+            dmur_hawqala_3D.css3dObject.element.style.fontSize = "30px";
+            dmur_hawqala_3D.rotation.y = -Math.PI/2;
+            scene.add(dmur_hawqala_3D);
+
+
+
             jouer.addEventListener( 'click', function () 
             {
                 
@@ -147,41 +175,20 @@
                 main.css3dObject.element.style.opacity = "0"
             } );
 
-            background = makeElementObject('div', window.innerWidth*1.5, window.innerHeight,Hawqala)
-            background.css3dObject.element.setAttribute('contenteditable', '')    
-            background.css3dObject.element.style.opacity = "1"
-            //background.css3dObject.element.style.padding = parseInt(window.innerWidth/7)+'px'
-            background.css3dObject.element.style.fontSize = parseInt(window.innerWidth/7)+'px'
-            background.position.x = window.innerWidth/2;
-            background.position.y = 0;
-            background.position.z =0;
+            const Hawqala = 'لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِٱللَّٰهِ';
+            hawqala = makeElementObject('div', window.innerWidth, window.innerHeight,Hawqala)
+            hawqala.css3dObject.element.setAttribute('contenteditable', 'false')    
+            hawqala.css3dObject.element.style.opacity = "1"
+            hawqala.css3dObject.element.style.padding = 30+'px'
+            hawqala.css3dObject.element.style.fontSize = parseInt(window.innerWidth/10)+'px'
+            hawqala.position.x = 0;
+            hawqala.position.y = 1;
+            hawqala.position.z = -window.innerWidth;
          
-            background.css3dObject.element.style.background = '#00a381'
-            root.add( background );
+            hawqala.css3dObject.element.style.background = 'rgba(0, 163, 129,1)'
+            scene.add( hawqala );
 
-         
-
-            
-            // light
-            ~function() {
-                var ambientLight = new THREE.AmbientLight( 0x999999, 1.5 );
-                root.add( ambientLight );
-
-                light = new THREE.PointLight( 0xffffff, 1, 0 );
-                light.castShadow = true;
-                light.position.z = 150;
-                light.shadow.mapSize.width = 1024;  // default
-                light.shadow.mapSize.height = 1024; // default
-                light.shadow.camera.near = 1;       // default
-                light.shadow.camera.far = 2000;      // default
-
-                scene.add( new THREE.PointLightHelper( light, 10 ) )
-
-                root.add( light );
-            }()
-
-            
-
+   
             camera = new THREE.PerspectiveCamera(45,window.innerWidth/window.innerHeight,1,1000);
             camera.position.set( 0, 0, 0 );
 
@@ -213,19 +220,15 @@
 
             element.style.width = width+'px';
             element.style.height = height+'px';
-            element.style.opacity = 0.999;
             element.style.boxSizing = 'border-box'
             element.className = "arabic"
 
             
 
-            // make an invisible plane for the DOM element to chop
-            // clip a WebGL geometry with it.
             var material = new THREE.MeshPhongMaterial({
                 opacity : 0.15,
                 color : new THREE.Color( 0x111111 ),
                 blending: THREE.NoBlending,
-                // side : THREE.DoubleSide,
             });
             var geometry = new THREE.BoxGeometry( width, height, 1 );
             var mesh = new THREE.Mesh( geometry, material );
@@ -238,8 +241,6 @@
             let message_wvert=[];
             let message_worange=[];
             let message_wrouge=[];
-            //let message_wDhabt=[];
-            //score_color = message.split(" ");
                 
                 for(let i=0; i<message.length; i++)
                 {                     
@@ -367,7 +368,7 @@ document.addEventListener( 'keydown', ( event ) => {
     {
         keyStates[ event.code ] = false;
     }
-    console.log("event.code = "+event.code)
+
 
 } );
 

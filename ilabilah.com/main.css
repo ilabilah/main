@@ -1,5 +1,5 @@
 body {
-   /* background-color: #ffffff; */
+    background-color: rgb(188, 246, 201);
     margin: 0;
    
 }
@@ -27,16 +27,12 @@ body {
     height: 100%;
 
     color: aliceblue;
-    font-size:50px;
+    /*font-size:50px;*/
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    position: absolute;
-
     text-align: center;
-    /*cursor: pointer;*/
-    background-color: rgba(0,0,0,0.5);
     z-index: 10003;
 }
 
